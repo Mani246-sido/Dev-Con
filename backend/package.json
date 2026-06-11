@@ -1,0 +1,23 @@
+{
+  "name": "devconnect",
+  "version": "1.0.0",
+  "description": "a developers friendly place",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ai",
+    "driven",
+    "developers"
+  ],
+  "author": "maninder singh",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.7.0",
+    "mysql2": "^3.22.5"
+  }
+}
