@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
 {
@@ -89,6 +90,16 @@ const userSchema = new mongoose.Schema(
         ],
     },
 ],
+ reputation:{
+    score:{type: Number,
+        default:0
+    },
+    level:{
+        type:String,
+        enum:["newcomer","ccontributor","builder","expert","legend"],
+        default:"newcomer",
+    },
+ },
 
     
     
@@ -97,6 +108,18 @@ const userSchema = new mongoose.Schema(
     
 },{
     timestamps:true
-})
+});
+userSchema.pre("save",async function(next){
+    if(!this.isModified("password") || !this.password) return next();
+    this.password=await bcrypt.hash(this.password,10);
+    next();
+});
 
-export const User = mongoose.model("User",userSchema)
+userSchema.methods.matchPassword = async function (enteredPassword) {
+    if(!this.password) return false;
+    return await bcrypt.compare(enteredPassword,this.password);
+};
+
+
+
+export const User = mongoose.model("User",userSchema);
