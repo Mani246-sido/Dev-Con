@@ -43,3 +43,51 @@ const editProject = asyncHandler(async(req,res)=>{
     await project.save();
     return res.status(200).json(new ApiResponse(200,"Project updated successfully", project));
 });
+
+const getProjectDetails = asynchHandlr(async(req,res)=>{
+    const project = Project.findById(req.params.id)
+    .populate("owner","name username profilePicture reputation")
+    .populate("members.user","name username profilePicture skills reputation");
+
+    if(!project){
+        throw new ApiError(402,"Project Not Found");
+
+    }
+    project.views+=1;
+    await project.save();
+    return res.status(200)
+    .json(new ApiResponse(200, "Project details fetched",project));
+
+});
+const getProjects = aysncHandler(async(req,res)=>{
+    const {type, status, tech, status} =  req.body;
+    const filter = {};
+    if(type) filter.type = type;
+    if(status) filter.status = status;
+    if(tech) filter.techStack = {
+        $in:[new RegExp(tech, "i")]
+    };
+    if(search) filter.title = {
+        $regex: search,
+        $options: "i"
+    };
+    const projects = await Project.find(filter)
+    .populate("owner", "name username profilePicture")
+    .sort({createdAt: -1});
+    
+    return res
+    .status(200)
+    .json(new ApiResponse(200,"Project fetched succesfully",projects));
+});
+
+
+export {
+    createProject,
+    editProject,
+    getProjectDetails,
+    getProjects,
+    
+
+
+
+}
