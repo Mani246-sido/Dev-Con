@@ -79,6 +79,34 @@ const getProjects = aysncHandler(async(req,res)=>{
     .status(200)
     .json(new ApiResponse(200,"Project fetched succesfully",projects));
 });
+const joinProject  = asyncHandler(async(req,res)=>{
+    const project = Project.findById(req.params.id);
+    if(!project){
+        throw new ApiError(404,"Project Not Found");
+    }
+    if(!project.status!=="recruiting"){
+        throw new ApiError(403,"this project is not currently recruiting any members");
+    }
+    const alreadyMember = project.members.some((m)=> m.user.toString() ===req.users._id.toString()
+    );
+    if(alreadyMember){
+        throw new ApiError(440,"you are already a member of this project");
+    }
+    if(project.members.length>=project.maxTeamSize){
+        throw new ApiError(400,"project team is already full");
+
+    }
+    project.members.push({user: req.user._id,
+        role: req.body.role || "contributor"
+    });
+    if(project.members.length>=project.maxTeamSize){
+        project.status = "in-progress";
+    }
+    await project.save();
+
+    return res
+    .status(200).json(new ApiResponse(200,"Joined project successfully",project));
+})
 
 
 export {
@@ -86,6 +114,7 @@ export {
     editProject,
     getProjectDetails,
     getProjects,
+    joinProject
     
 
 
