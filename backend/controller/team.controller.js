@@ -51,3 +51,24 @@ const getTeamDetails = asyncHandler(async(req,res)=>{
     }
     return res.status(200).json(new ApiResponse(200,"Team detaills fetched",team));
 });
+
+const getTeams = asyncHandler(async(req,res)=>{
+    const {status , skill , search} = req.query;
+    const filter = {visibility: "public"};
+    
+    if(status) filter.status = status;
+    if(skill) filter.skillsNeeded = {
+        $in:[new RegExpI(skill, "i")]
+    };
+    if (search) filter.name = {
+        $regex: search ,
+        $options: "i"
+    };
+    const teams = await Team.find(filter)
+    .populate("creator","name username profilePicture")
+    .sort({createdAt: -1});
+
+    return res.status(200).json(new ApiResponse(200,"Teams fetched successfully",teams));
+});
+
+const joinTeam = asyncHandler(async)
