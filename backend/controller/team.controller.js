@@ -71,4 +71,30 @@ const getTeams = asyncHandler(async(req,res)=>{
     return res.status(200).json(new ApiResponse(200,"Teams fetched successfully",teams));
 });
 
-const joinTeam = asyncHandler(async)
+const joinTeam = asyncHandler(async(req,res)=>{
+    const team = await Team.findById(req.params.id);
+    if(!team){
+        throw new ApiError(405,"Team not found");
+    }
+    if(team.status!=="open"){
+        throw new ApiError(400, "This team is not open for joining");
+    }
+    const alreadyMember = team.members.some(
+        (m)=> m.user.toString() === req.user._id.toString()
+    );
+    if(alreadyMember){
+        throw new ApiError(400,"You are already a member of this team");
+
+    }
+    if(team.members.length >= team.maxMembers){
+        throw new ApiError(400,"Team is already full");
+    }
+    team.members.push({user: req.user._id,
+        role : req.body.role || "Member"
+    })
+    team.refershStatus();
+    await team.save();
+
+    return res.status(200).json(new ApiResponse(200,"Joined team successfully",team));
+
+})
