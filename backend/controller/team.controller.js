@@ -97,4 +97,34 @@ const joinTeam = asyncHandler(async(req,res)=>{
 
     return res.status(200).json(new ApiResponse(200,"Joined team successfully",team));
 
-})
+});
+
+const removeMember = asyncHandler(async(req,res)=>{
+    const team = await Team.findById(req.params.id);
+
+    if(!team){
+        throw new ApiError(404,"Team not found");
+    }
+    const isCreator = team.creator.toString() === req.user._id.toString();
+  const isSelf = req.params.userId === req.user._id.toString();
+
+  if (!isCreator && !isSelf) {
+    throw new ApiError(403, "Not authorized to remove this member");
+  }
+
+  team.members = team.members.filter((m) => m.user.toString() !== req.params.userId);
+  team.refreshStatus();
+  await team.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Member removed successfully", team));
+});
+export{
+    createTeam,
+    editTeams,
+    getTeamDetails,
+    getTeams,
+    joinTeam,
+    removeMember
+};
